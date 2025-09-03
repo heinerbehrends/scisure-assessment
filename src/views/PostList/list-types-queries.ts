@@ -37,7 +37,7 @@ export type PageQueryOptions = {
     ];
   };
 };
-export const POSTS = gql`
+export const GET_POSTS = gql`
   query GetPosts($options: PageQueryOptions) {
     posts(options: $options) {
       data {
@@ -54,3 +54,21 @@ export const POSTS = gql`
     }
   }
 `;
+
+export const POSTS_VARIABLES = {
+  options: {
+    paginate: {
+      page: 1,
+      limit: 10,
+    },
+    search: {
+      q: "",
+    },
+    sort: [
+      {
+        field: "id",
+        order: "DESC",
+      },
+    ],
+  },
+};

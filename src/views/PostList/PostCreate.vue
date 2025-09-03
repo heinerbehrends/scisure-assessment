@@ -8,7 +8,7 @@ import {
   GET_USERS,
 } from "./create-types-queries";
 import gql from "graphql-tag";
-import type { PostListResponse } from "./list-types-queries";
+import { GET_POSTS, type PostListResponse } from "./list-types-queries";
 
 const title = ref("");
 const body = ref("");
@@ -38,28 +38,10 @@ const {
       },
     },
   },
-  // Add this update function to update the cache queries
   update: (cache, { data }) => {
     if (data?.createPost) {
-      // Update the posts query that fetches the list
       const existingPosts = cache.readQuery<PostListResponse>({
-        query: gql`
-          query GetPosts($options: PageQueryOptions) {
-            posts(options: $options) {
-              data {
-                title
-                id
-                user {
-                  username
-                }
-                body
-              }
-              meta {
-                totalCount
-              }
-            }
-          }
-        `,
+        query: GET_POSTS,
         variables: {
           options: {
             paginate: {

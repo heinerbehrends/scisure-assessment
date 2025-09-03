@@ -1,80 +1,39 @@
 <script setup lang="ts">
-import { useQuery } from "@vue/apollo-composable";
 import PostCreate from "./PostCreate.vue";
-import { ref, computed, nextTick } from "vue";
+import { ref, computed } from "vue";
 import { getTotalCount, checkNextPage, checkPreviousPage } from "./pagination";
-import { usePostSearch } from "../../composables/usePostSearch";
-import {
-  type PostListResponse,
-  type PageQueryOptions,
-  POSTS,
-} from "./list-types-queries";
+import { usePostsQuery } from "./usePostsQuery";
 
 const currentPage = ref(1);
-const pageSize = ref(10);
+const pageSize = 10;
 
-// Use the search composable
-const { searchQuery, buildSearchOptions } = usePostSearch();
-
-const { result, loading, error, fetchMore, refetch } = useQuery<
-  PostListResponse,
-  PageQueryOptions
->(POSTS, {
-  options: buildSearchOptions(currentPage.value, pageSize.value),
+const {
+  searchQuery,
+  buildSearchOptions,
+  result,
+  loading,
+  error,
+  refetch,
+  loadPage,
+  postListTop,
+} = usePostsQuery({
+  currentPage,
+  pageSize,
 });
-
-console.log(result.value);
-
-// Load next page function
-type LoadPageArgs = "next" | "previous";
-
-function loadPage(type: LoadPageArgs) {
-  if (!result.value?.posts.data) return;
-
-  const newPage =
-    type === "next" ? currentPage.value + 1 : currentPage.value - 1;
-
-  currentPage.value = newPage;
-
-  fetchMore({
-    variables: {
-      options: buildSearchOptions(currentPage.value, pageSize.value),
-    },
-    updateQuery: (previousResult: PostListResponse, { fetchMoreResult }) => {
-      if (!fetchMoreResult) return previousResult;
-      return {
-        posts: {
-          ...previousResult.posts,
-          data: fetchMoreResult.posts.data,
-          meta: fetchMoreResult.posts.meta,
-        },
-      };
-    },
-  })?.then(() => {
-    // Scroll to top of the list after the new page loads
-    nextTick(() => {
-      if (postListTop.value) {
-        postListTop.value.scrollIntoView({
-          behavior: "instant",
-          block: "start",
-        });
-      }
-    });
-  });
-}
 
 function loadSearch() {
   currentPage.value = 1; // Reset to first page when searching
   refetch({
-    options: buildSearchOptions(1, pageSize.value),
+    options: buildSearchOptions(1, pageSize),
   });
 }
 
 function handleReset() {
   searchQuery.value = "";
   currentPage.value = 1;
+  showCreatePost.value = false;
   refetch({
-    options: buildSearchOptions(1, pageSize.value),
+    options: buildSearchOptions(1, pageSize),
   });
 }
 
@@ -87,7 +46,7 @@ const hasNextPage = computed(() => {
   return checkNextPage({
     totalCount: totalCount.value,
     currentPage: currentPage.value,
-    pageSize: pageSize.value,
+    pageSize: pageSize,
   });
 });
 
@@ -99,11 +58,10 @@ const hasPreviousPage = computed(() => {
 });
 
 const showCreatePost = ref(false);
-const postListTop = ref<HTMLElement>();
 </script>
 
 <template>
-  <div class="post-list" ref="postListTop">
+  <div class="post-list">
     <!-- Loading -->
     <div aria-busy="true" v-if="loading">Loading...</div>
     <!-- Error -->
@@ -112,7 +70,11 @@ const postListTop = ref<HTMLElement>();
     <template v-if="result && result.posts.data">
       <h1>Posts</h1>
       <!-- Post Create -->
-      <button @click="showCreatePost = !showCreatePost" class="search-button">
+      <button
+        v-if="!showCreatePost"
+        @click="showCreatePost = !showCreatePost"
+        class="search-button"
+      >
         + Create Post
       </button>
       <template v-if="showCreatePost">
@@ -138,7 +100,7 @@ const postListTop = ref<HTMLElement>();
         </div>
       </form>
       <!-- Post List -->
-      <ul>
+      <ul ref="postListTop">
         <li v-for="post in result.posts.data" :key="post.id" class="post-item">
           <router-link
             :to="{ name: 'PostDetail', params: { id: post.id } }"
