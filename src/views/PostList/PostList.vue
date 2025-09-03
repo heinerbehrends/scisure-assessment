@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PostCreate from "./PostCreate.vue";
+import SearchForm from "./SearchForm.vue";
 import { ref, computed } from "vue";
 import { getTotalCount, checkNextPage, checkPreviousPage } from "./pagination";
 import { usePostsQuery } from "./usePostsQuery";
@@ -81,26 +82,14 @@ const showCreatePost = ref(false);
         <PostCreate />
       </template>
       <!-- Search Form -->
-      <form @submit.prevent="loadSearch" class="search-form">
-        <div class="search-form">
-          <label for="searchQuery" class="visually-hidden">
-            Search posts
-          </label>
-          <input
-            v-model="searchQuery"
-            id="searchQuery"
-            type="text"
-            placeholder="Search posts"
-            class="search-input"
-          />
-          <button type="submit" class="search-button">Search</button>
-          <button type="button" @click="handleReset" class="search-button">
-            Reset
-          </button>
-        </div>
-      </form>
+      <SearchForm
+        v-model:searchQuery="searchQuery"
+        @search="loadSearch"
+        @reset="handleReset"
+      />
       <!-- Post List -->
       <ul ref="postListTop">
+        <p v-if="result.posts.data.length === 0">No posts found</p>
         <li v-for="post in result.posts.data" :key="post.id" class="post-item">
           <router-link
             :to="{ name: 'PostDetail', params: { id: post.id } }"
@@ -164,44 +153,6 @@ a {
     cursor: pointer;
     color: initial;
   }
-}
-
-.search-form {
-  text-align: left;
-  display: flex;
-  gap: 1rem;
-}
-
-.search-input {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid #888;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.search-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #333;
-  color: white;
-  border: 1px solid #888;
-  font-size: 1rem;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #ccc;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  border: 0;
-  white-space: nowrap;
 }
 
 .pagination-controls {

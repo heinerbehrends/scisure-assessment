@@ -91,10 +91,9 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(
 }
 
 .back-link {
-  color: #42b883;
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border: 1px solid #42b883;
+  border: 1px solid #ccc;
   border-radius: 4px;
 }
 
