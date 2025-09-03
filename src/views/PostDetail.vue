@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { useQuery } from "@vue/apollo-composable";
 import gql from "graphql-tag";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 const postId = computed(() => route.params.id as string);
+const showComments = ref(false);
 
 type Post = {
     body: string;
@@ -17,6 +18,7 @@ type Post = {
         data: {
             body: string;
             name: string;
+            id: string;
         }[];
     };
 };
@@ -37,6 +39,7 @@ const GET_POST = gql`
             data {
                 body
                 name
+                id
             }
         }
         title
@@ -67,6 +70,21 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(GE
             <h1>{{ result.post.title }}</h1>
             <p class="meta">By {{ result.post.user?.username }}</p>
             <div class="body">{{ result.post.body }}</div>
+            <!-- Show Comments -->
+            <button @click="showComments = !showComments" class="show-comments-btn">
+                {{ showComments ? "Hide Comments" : "Show Comments" }}
+            </button>
+            <!-- Comments -->
+            <div v-if="showComments" class="comments">
+                <h3>Comments</h3>
+                <ul>
+                    <li v-for="comment in result.post.comments.data" :key="comment.id">
+                        <p class="comment-name">{{ comment.name }} writes:</p>
+                        <p>{{ comment.body }}</p>
+                    </li>
+                </ul>
+            </div>
+
         </div>
     </div>
 </template>
@@ -76,12 +94,9 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(GE
     max-width: 800px;
     margin: 0 auto;
     text-align: left;
-
-}
-
-#app {
-    margin: 0;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .loading,
@@ -93,12 +108,16 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(GE
 
 .post h1 {
     font-size: 2.5rem;
-    margin-bottom: 1rem;
+}
+
+.post {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .meta {
     color: #666;
-    margin-bottom: 2rem;
 }
 
 .body {
@@ -116,5 +135,22 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(GE
 
 .back-link:hover {
     text-decoration: underline;
+}
+
+.comments {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.5rem 1rem;
+}
+
+.show-comments-btn {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+
+}
+
+.comment-name {
+    font-style: italic;
 }
 </style>

@@ -22,7 +22,6 @@ a {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -36,8 +35,12 @@ h2 {
   font-weight: 500;
 } 
 
-h1, h2 {
+h1, h2, h3 {
   line-height: 1.1;
+  margin: 0;
+}
+p {
+  margin: 0;
 }
 
 button {
