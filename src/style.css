@@ -2,7 +2,7 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
+  font-size: 1.2rem;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
@@ -14,8 +14,9 @@
 }
 
 a {
-  font-weight: 500;
-  text-decoration: inherit;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
 }
 
 h1 {
@@ -30,7 +31,9 @@ h2 {
 h1, h2, h3 {
   line-height: 1.1;
   margin: 0;
+  text-wrap: balance;
 }
+
 p {
   margin: 0;
 }
@@ -47,11 +50,28 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: 1px solid #fff;
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .card {
@@ -68,4 +88,24 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+}
+
+input, select, textarea, button {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background-color: #333;
+  border-radius: 0.25rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
 }

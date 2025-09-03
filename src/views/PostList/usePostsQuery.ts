@@ -1,19 +1,25 @@
 import { nextTick, ref, type Ref } from "vue";
 import { useQuery } from "@vue/apollo-composable";
+import { useRouter } from "vue-router";
 import {
   type PostListResponse,
   type PageQueryOptions,
   GET_POSTS,
 } from "./list-types-queries";
 
+type UsePostsQueryArgs = {
+  currentPage: Ref<number>;
+  pageSize: number;
+  searchParam: Ref<string>;
+};
+
 export function usePostsQuery({
   currentPage,
   pageSize,
-}: {
-  currentPage: Ref<number>;
-  pageSize: number;
-}) {
-  const searchQuery = ref("");
+  searchParam,
+}: UsePostsQueryArgs) {
+  const router = useRouter();
+  const searchQuery = ref(searchParam.value || "");
   function buildSearchOptions(
     page: number,
     limit: number
@@ -50,6 +56,8 @@ export function usePostsQuery({
 
     currentPage.value = newPage;
 
+    router.replace({ query: {} });
+
     fetchMore({
       variables: {
         options: buildSearchOptions(currentPage.value, pageSize),
@@ -65,7 +73,6 @@ export function usePostsQuery({
         };
       },
     })?.then(() => {
-      // Scroll to top of the list after the new page loads
       nextTick(() => {
         if (postListTop.value) {
           postListTop.value.scrollIntoView({
@@ -74,6 +81,21 @@ export function usePostsQuery({
           });
         }
       });
+    });
+  }
+
+  function loadSearch() {
+    currentPage.value = 1;
+    refetch({
+      options: buildSearchOptions(1, pageSize),
+    });
+  }
+
+  function handleReset() {
+    searchQuery.value = "";
+    currentPage.value = 1;
+    refetch({
+      options: buildSearchOptions(1, pageSize),
     });
   }
 
@@ -86,5 +108,7 @@ export function usePostsQuery({
     refetch,
     loadPage,
     postListTop,
+    loadSearch,
+    handleReset,
   };
 }

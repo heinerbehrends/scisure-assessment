@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { useQuery } from "@vue/apollo-composable";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRoute } from "vue-router";
 import {
   type PostQueryResponse,
   type PostQueryArgs,
   GET_POST,
 } from "./detail-types-queries";
+import Comments from "./Comments.vue";
 
 const route = useRoute();
 const postId = computed(() => route.params.id as string);
-const showComments = ref(false);
+const currentPage = computed(() => route.query.page as string);
+const searchQuery = computed(() => route.query.search as string);
 
 const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(
   GET_POST,
@@ -23,7 +25,12 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(
 <template>
   <div class="post-detail">
     <!-- back to posts -->
-    <router-link to="/" class="back-link">← Back to Posts</router-link>
+    <router-link
+      :to="{ name: 'Home', query: { page: currentPage, search: searchQuery } }"
+      class="back-link"
+    >
+      ← Back to Posts
+    </router-link>
     <!-- Loading -->
     <div v-if="loading" class="loading">Loading post...</div>
     <!-- Error -->
@@ -33,24 +40,8 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(
       <h1>{{ result.post.title }}</h1>
       <p class="meta">By {{ result.post.user?.username }}</p>
       <div class="body">{{ result.post.body }}</div>
-      <!-- Show Comments -->
-      <button
-        v-if="result && result.post.comments.data.length > 0"
-        @click="showComments = !showComments"
-        class="show-comments-btn"
-      >
-        {{ showComments ? "Hide Comments" : "Show Comments" }}
-      </button>
-      <!-- Comments -->
-      <div v-if="showComments" class="comments">
-        <h3>Comments</h3>
-        <ul>
-          <li v-for="comment in result.post.comments.data" :key="comment.id">
-            <p class="comment-name">{{ comment.name }} writes:</p>
-            <p>{{ comment.body }}</p>
-          </li>
-        </ul>
-      </div>
+      <!-- Comments Component -->
+      <Comments :comments="result.post.comments" />
     </div>
   </div>
 </template>
@@ -95,25 +86,10 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(
   padding: 0.5rem 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background-color: #333;
 }
 
 .back-link:hover {
   text-decoration: underline;
-}
-
-.comments {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  padding: 1.5rem 1rem;
-}
-
-.show-comments-btn {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-}
-
-.comment-name {
-  font-style: italic;
 }
 </style>

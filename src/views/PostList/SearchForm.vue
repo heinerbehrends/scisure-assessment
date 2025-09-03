@@ -36,45 +36,31 @@ function updateSearchQuery(value: string) {
         placeholder="Search posts"
         class="search-input"
       />
-      <button type="submit" class="search-button">Search</button>
-      <button type="button" @click="handleReset" class="search-button">
-        Reset
-      </button>
+      <span>
+        <button type="submit" class="margin-right">Search</button>
+        <button v-if="props.searchQuery" type="button" @click="handleReset">
+          Reset
+        </button>
+      </span>
     </div>
   </form>
 </template>
 
-<style scoped>
+<style>
 .search-form {
   text-align: left;
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+}
+
+.margin-right {
+  margin-right: 1rem;
 }
 
 .search-input {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid #888;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.search-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #333;
-  color: white;
-  border: 1px solid #888;
-  font-size: 1rem;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  border: 0;
-  white-space: nowrap;
+  flex-grow: 1;
 }
 </style>

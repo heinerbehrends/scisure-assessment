@@ -1,133 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useQuery, useMutation } from "@vue/apollo-composable";
-import {
-  type CreatePostResponse,
-  type UsersResponse,
-  CREATE_POST,
-  GET_USERS,
-} from "./create-types-queries";
-import gql from "graphql-tag";
-import { GET_POSTS, type PostListResponse } from "./list-types-queries";
+import { useQuery } from "@vue/apollo-composable";
+import { type UsersResponse, GET_USERS } from "./create-types-queries";
 import { useCreatePost } from "./useCreatePost";
 
 const title = ref("");
 const body = ref("");
 const username = ref("");
 
-// const {
-//   mutate: createPostMutation,
-//   loading: createLoading,
-//   error: createError,
-// } = useMutation<CreatePostResponse>(CREATE_POST, () => ({
-//   variables: {
-//     input: {
-//       title: title.value,
-//       body: body.value,
-//     },
-//   },
-//   optimisticResponse: {
-//     createPost: {
-//       __typename: "Post",
-//       body: body.value,
-//       title: title.value,
-//       id: "101",
-//       user: {
-//         __typename: "User",
-//         username: username.value,
-//         id: userId.value as string,
-//       },
-//     },
-//   },
-//   update: (cache, { data }) => {
-//     if (data?.createPost) {
-//       const existingPosts = cache.readQuery<PostListResponse>({
-//         query: GET_POSTS,
-//         variables: {
-//           options: {
-//             paginate: {
-//               page: 1,
-//               limit: 10,
-//             },
-//             search: {
-//               q: "",
-//             },
-//             sort: [
-//               {
-//                 field: "id",
-//                 order: "DESC",
-//               },
-//             ],
-//           },
-//         },
-//       });
-
-//       if (existingPosts?.posts?.data) {
-//         const updatedPosts = {
-//           posts: {
-//             ...existingPosts.posts,
-//             data: [
-//               {
-//                 ...data.createPost,
-//                 user: {
-//                   __typename: "User",
-//                   username: username.value,
-//                 },
-//               },
-//               ...existingPosts.posts.data,
-//             ],
-//             meta: {
-//               ...existingPosts.posts.meta,
-//               totalCount: existingPosts.posts.meta.totalCount + 1,
-//             },
-//           },
-//         };
-
-//         // Write the updated data back to cache
-//         cache.writeQuery({
-//           query: gql`
-//             query GetPosts($options: PageQueryOptions) {
-//               posts(options: $options) {
-//                 data {
-//                   title
-//                   id
-//                   user {
-//                     username
-//                   }
-//                   body
-//                 }
-//                 meta {
-//                   totalCount
-//                 }
-//               }
-//             }
-//           `,
-//           variables: {
-//             options: {
-//               paginate: {
-//                 page: 1,
-//                 limit: 10,
-//               },
-//               search: {
-//                 q: "",
-//               },
-//               sort: [
-//                 {
-//                   field: "id",
-//                   order: "DESC",
-//                 },
-//               ],
-//             },
-//           },
-//           data: updatedPosts,
-//         });
-//       }
-//     }
-//   },
-// }));
-
 function createPost() {
-  // Early return if required fields are empty
   if (!title.value.trim() || !body.value.trim() || !username.value) {
     return;
   }
@@ -135,11 +16,12 @@ function createPost() {
   createPostMutation()
     .then((response) => {
       if (response?.data?.createPost) {
-        // You can add success notification here
+        // add success notification here
         console.log("Post created successfully:", response.data.createPost);
       }
     })
     .catch((error) => {
+      // add error notification here
       console.error("Error creating post:", error);
     });
 }
@@ -179,11 +61,13 @@ const { createPostMutation, createLoading, createError } = useCreatePost({
           <select
             id="username"
             v-model="username"
-            placeholder="Select a username"
             :disabled="createLoading"
             required
-            class="username-input"
+            :class="{ placeholder: !username }"
           >
+            <option value="" disabled selected class="placeholder">
+              Select a username
+            </option>
             <option
               v-for="user in result.users.data"
               :key="user.id"
@@ -228,39 +112,19 @@ const { createPostMutation, createLoading, createError } = useCreatePost({
   gap: 2rem;
 }
 
-.title-input {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid #888;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.body-input {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid #888;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
 .create-post-container {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
-
-.username-input {
+.user-input {
   padding: 0.75rem 1.5rem;
-  border: 1px solid #888;
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: #333;
 }
-
-.submit-button {
+.placeholder {
+  color: #666;
+}
+.placeholder option {
+  color: #fff;
   padding: 0.75rem 1.5rem;
-  background-color: #333;
-  color: white;
-  border: 1px solid #888;
-  font-size: 1rem;
 }
 </style>
