@@ -53,21 +53,25 @@ const POSTS = gql`
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-const { result, loading, error, fetchMore } = useQuery<PostListResponse, PageQueryOptions>(POSTS, () => ({
+const { result, loading, error, fetchMore } = useQuery<PostListResponse, PageQueryOptions>(POSTS, {
     options: {
         paginate: {
-            page: currentPage.value,
-            limit: pageSize.value,
+            page: 1,
+            limit: 10,
         },
     },
-}));
+});
 console.log('result', result.value);
 
-// Load more function
-function loadMore() {
+// Load next page function
+type LoadPageArgs = 'next' | 'previous';
+
+function loadPage(type: LoadPageArgs) {
     if (!result.value?.posts.data) return;
 
-    currentPage.value += 1;
+    const newPage = type === 'next' ? currentPage.value + 1 : currentPage.value - 1;
+
+    currentPage.value = newPage;
 
     fetchMore({
         variables: {
@@ -78,28 +82,20 @@ function loadMore() {
                 },
             },
         },
-        updateQuery: (previousResult: PostListResponse, { fetchMoreResult }: { fetchMoreResult?: PostListResponse }) => {
+        updateQuery: (previousResult: PostListResponse, { fetchMoreResult }) => {
             if (!fetchMoreResult) return previousResult;
-
             return {
-                ...previousResult,
-                data: {
-                    ...previousResult,
-                    posts: {
-                        ...previousResult.posts,
-                        data: [
-                            ...previousResult.posts.data,
-                            ...fetchMoreResult.posts.data,
-                        ],
-                        meta: fetchMoreResult.posts.meta,
-                    },
+                posts: {
+                    ...previousResult.posts,
+                    data: fetchMoreResult.posts.data,
+                    meta: fetchMoreResult.posts.meta,
                 },
             };
         },
     });
 }
 
-// Get pagination info
+
 const totalCount = computed(() => {
     if (!result.value?.posts?.meta) return null;
     const { meta } = result.value.posts;
@@ -107,29 +103,47 @@ const totalCount = computed(() => {
     return meta.totalCount;
 });
 
-type CheckMorePostsArgs = {
+type CheckNextPageArgs = {
     totalCount: number;
     currentPage: number;
     pageSize: number;
 };
 
-function checkMorePosts({
+function checkNextPage({
     totalCount,
     currentPage,
     pageSize,
-}: CheckMorePostsArgs) {
+}: CheckNextPageArgs) {
     return totalCount > currentPage * pageSize;
 };
 
+type CheckPreviousPageArgs = {
+    currentPage: number;
+};
 
-const hasMorePosts = computed(() => {
+function checkPreviousPage({
+    currentPage,
+}: CheckPreviousPageArgs) {
+    return currentPage > 1;
+};
+
+
+const hasNextPage = computed(() => {
     if (!totalCount.value) return false;
-    return checkMorePosts({
+    return checkNextPage({
         totalCount: totalCount.value,
         currentPage: currentPage.value,
         pageSize: pageSize.value,
     });
 });
+
+const hasPreviousPage = computed(() => {
+    if (!currentPage.value) return false;
+    return checkPreviousPage({
+        currentPage: currentPage.value,
+    });
+});
+
 </script>
 
 <template>
@@ -138,22 +152,24 @@ const hasMorePosts = computed(() => {
 
     <section v-if="result && result.posts.data">
         <h1>Posts</h1>
-
+        <!-- Post List -->
         <ul>
-            <li v-for="post in result.posts.data" :key="post.id">
+            <li v-for="post in result.posts.data" :key="post.id" class="post-item">
                 <h2>{{ post.title }}</h2>
                 <p>{{ post.body }}</p>
-                <p>{{ post.user.username }}</p>
+                <p>Written by {{ post.user.username }}</p>
             </li>
         </ul>
-
-        <!-- Load More Button -->
-        <div v-if="hasMorePosts" class="pagination-controls">
-            <button @click="loadMore" :disabled="loading" class="load-more-btn">
+        <div class="pagination-controls">
+            <!-- Load Previous Page Button -->
+            <button v-if="hasPreviousPage" @click="loadPage('previous')" :disabled="loading" class="load-more-btn">
+                {{ loading ? 'Loading...' : 'Load previous page' }}
+            </button>
+            <!-- Load Next Page Button -->
+            <button v-if="hasNextPage" @click="loadPage('next')" :disabled="loading" class="load-more-btn">
                 {{ loading ? 'Loading...' : 'Load next page' }}
             </button>
         </div>
-
         <!-- Pagination Info -->
         <div v-if="totalCount" class="pagination-info">
             <p>
@@ -168,6 +184,9 @@ const hasMorePosts = computed(() => {
 .pagination-controls {
     margin: 2rem 0;
     text-align: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
 }
 
 .load-more-btn {
@@ -193,5 +212,12 @@ const hasMorePosts = computed(() => {
     text-align: center;
     color: #6c757d;
     margin-top: 1rem;
+}
+
+.post-item {
+    list-style: none;
+    padding: 1rem;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
 }
 </style>
