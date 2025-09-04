@@ -4,12 +4,13 @@ import SearchForm from "./SearchForm.vue";
 import Pagination from "./Pagination.vue";
 import { ref } from "vue";
 import { usePostsQuery } from "./usePostsQuery";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const currentPage = ref(Number(route.query.page) || 1);
 const pageSize = 10;
 const searchParam = ref(route.query.search as string);
+const router = useRouter();
 
 const {
   searchQuery,
@@ -28,7 +29,7 @@ const {
 
 function resetPage() {
   handleReset();
-  showCreatePost.value = false;
+  router.replace({ query: {} });
 }
 
 const showCreatePost = ref(false);
@@ -40,7 +41,6 @@ const showCreatePost = ref(false);
     <div aria-busy="true" v-if="loading">Loading...</div>
     <!-- Error -->
     <div aria-live="assertive" v-if="error">Error: {{ error.message }}</div>
-    <!-- Post List -->
     <template v-if="result && result.posts.data">
       <h1>Posts</h1>
       <!-- Post Create -->
@@ -66,7 +66,10 @@ const showCreatePost = ref(false);
             :to="{
               name: 'PostDetail',
               params: { id: post.id },
-              query: { page: currentPage, search: searchQuery },
+              query: {
+                page: currentPage,
+                search: searchQuery ? searchQuery : undefined,
+              },
             }"
             class="post-link"
           >
@@ -75,6 +78,7 @@ const showCreatePost = ref(false);
           </router-link>
         </li>
       </ul>
+      <!-- Pagination -->
       <Pagination
         :current-page="currentPage"
         :page-size="pageSize"

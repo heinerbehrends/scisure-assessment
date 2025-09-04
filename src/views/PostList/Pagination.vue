@@ -3,16 +3,16 @@ import { computed } from "vue";
 import { getTotalCount, checkNextPage, checkPreviousPage } from "./pagination";
 import type { PostListResponse } from "./list-types-queries";
 
-interface PaginationProps {
+type PaginationProps = {
   currentPage: number;
   pageSize: number;
   result: PostListResponse;
   loading: boolean;
-}
+};
 
-interface PaginationEmits {
+type PaginationEmits = {
   (e: "loadPage", direction: "previous" | "next"): void;
-}
+};
 
 const props = defineProps<PaginationProps>();
 const emit = defineEmits<PaginationEmits>();

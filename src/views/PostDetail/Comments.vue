@@ -25,9 +25,12 @@ const showComments = ref(false);
     <button
       v-if="props.comments.data.length > 0"
       @click="showComments = !showComments"
-      class="show-comments-btn"
     >
-      {{ showComments ? "Hide Comments" : "Show Comments" }}
+      {{
+        showComments
+          ? "Hide Comments"
+          : `Show ${props.comments.data.length} Comments`
+      }}
     </button>
 
     <!-- Comments -->

@@ -45,18 +45,25 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  cursor: pointer;
+  border-color: #666;
   transition: border-color 0.25s;
 }
 button:hover {
+  cursor: pointer;
   border-color: 1px solid #fff;
+  background-color: #333;
+  @media (prefers-color-scheme: light) {
+    border-color: #000;
+    background-color: #eee;
+  }
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 button:disabled {
-  background-color: #6c757d;
+  color: #aaa;
+  border-color: #aaa;
   cursor: not-allowed;
 }
 
@@ -89,7 +96,7 @@ li {
   }
 }
 
-input, select, textarea, button {
+input, select, textarea, button, .back-link {
   padding: 0.75rem 1.5rem;
   border: 1px solid #ccc;
   font-size: 1rem;

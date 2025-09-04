@@ -26,7 +26,13 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(
   <div class="post-detail">
     <!-- back to posts -->
     <router-link
-      :to="{ name: 'Home', query: { page: currentPage, search: searchQuery } }"
+      :to="{
+        name: 'Home',
+        query: {
+          page: currentPage,
+          search: searchQuery ? searchQuery : undefined,
+        },
+      }"
       class="back-link"
     >
       ← Back to Posts
@@ -72,21 +78,9 @@ const { result, loading, error } = useQuery<PostQueryResponse, PostQueryArgs>(
   gap: 2rem;
 }
 
-.meta {
-  color: #666;
-}
-
 .body {
   line-height: 1.6;
   font-size: 1.1rem;
-}
-
-.back-link {
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #333;
 }
 
 .back-link:hover {
