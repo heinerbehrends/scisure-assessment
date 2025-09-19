@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PostCreate from "./PostCreate.vue";
+import PostCreate from "./PostCreate/PostCreate.vue";
 import SearchForm from "./SearchForm.vue";
 import Pagination from "./Pagination.vue";
 import { ref } from "vue";
