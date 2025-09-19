@@ -28,98 +28,94 @@ export function useCreatePost({
     .toString(36)
     .substring(2, 11)}`;
 
-  const {
-    mutate: createPostMutation,
-    loading: createLoading,
-    error: createError,
-  } = useMutation<CreatePostResponse>(CREATE_POST, () => ({
-    variables: {
-      input: {
-        title: title.value,
-        body: body.value,
-      },
-    },
-    optimisticResponse: {
-      createPost: {
-        __typename: "Post",
-        title: title.value,
-        body: body.value,
-        id: tempId,
-        user: {
-          __typename: "User",
-          username: username.value,
-          id: userId.value || "",
+  const { mutate: createPostMutation, loading: createLoading } =
+    useMutation<CreatePostResponse>(CREATE_POST, () => ({
+      variables: {
+        input: {
+          title: title.value,
+          body: body.value,
         },
       },
-    },
-    update: (cache, { data }) => {
-      if (!originalCacheState) {
-        originalCacheState = cache.readQuery<PostListResponse>({
+      optimisticResponse: {
+        createPost: {
+          __typename: "Post",
+          title: title.value,
+          body: body.value,
+          id: tempId,
+          user: {
+            __typename: "User",
+            username: username.value,
+            id: userId.value || "",
+          },
+        },
+      },
+      update: (cache, { data }) => {
+        if (!originalCacheState) {
+          originalCacheState = cache.readQuery<PostListResponse>({
+            query: GET_POSTS,
+            variables: POSTS_VARIABLES,
+          });
+        }
+
+        const existingPosts = cache.readQuery<PostListResponse>({
           query: GET_POSTS,
           variables: POSTS_VARIABLES,
         });
-      }
 
-      const existingPosts = cache.readQuery<PostListResponse>({
-        query: GET_POSTS,
-        variables: POSTS_VARIABLES,
-      });
+        if (!existingPosts?.posts.data) {
+          return;
+        }
 
-      if (!existingPosts?.posts.data) {
-        return;
-      }
+        // Remove the temporary post and add the real one
+        const postsWithoutTemp = existingPosts.posts.data.filter(
+          (post) => post.id !== tempId
+        );
 
-      // Remove the temporary post and add the real one
-      const postsWithoutTemp = existingPosts.posts.data.filter(
-        (post) => post.id !== tempId
-      );
-
-      const updatedPosts = {
-        posts: {
-          ...existingPosts.posts,
-          data: [
-            {
-              ...data?.createPost,
-              user: {
-                __typename: "User",
-                username: username.value,
-                id: userId.value || "",
+        const updatedPosts = {
+          posts: {
+            ...existingPosts.posts,
+            data: [
+              {
+                ...data?.createPost,
+                user: {
+                  __typename: "User",
+                  username: username.value,
+                  id: userId.value || "",
+                },
               },
+              ...postsWithoutTemp,
+            ],
+            meta: {
+              ...existingPosts.posts.meta,
+              totalCount: existingPosts.posts.meta.totalCount,
             },
-            ...postsWithoutTemp,
-          ],
-          meta: {
-            ...existingPosts.posts.meta,
-            totalCount: existingPosts.posts.meta.totalCount,
           },
-        },
-      };
+        };
 
-      cache.writeQuery({
-        query: GET_POSTS,
-        variables: POSTS_VARIABLES,
-        data: updatedPosts,
-      });
-    },
-    onError: (
-      _: unknown,
-      { cache }: { cache: ApolloCache<PostListResponse> }
-    ) => {
-      // Rollback to original state on error
-      if (originalCacheState) {
         cache.writeQuery({
           query: GET_POSTS,
           variables: POSTS_VARIABLES,
-          data: originalCacheState,
+          data: updatedPosts,
         });
-        originalCacheState = null; // Reset for next attempt
-      }
-    },
-  }));
+      },
+      onError: (
+        _: unknown,
+        { cache }: { cache: ApolloCache<PostListResponse> }
+      ) => {
+        // Rollback to original state on error
+        if (originalCacheState) {
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: POSTS_VARIABLES,
+            data: originalCacheState,
+          });
+          originalCacheState = null; // Reset for next attempt
+        }
+      },
+    }));
 
   return {
     createPostMutation,
     createLoading,
-    createError,
   };
 }

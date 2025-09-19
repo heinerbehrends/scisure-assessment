@@ -54,7 +54,7 @@ button:hover {
   background-color: #333;
   @media (prefers-color-scheme: light) {
     border-color: #000;
-    background-color: #eee;
+    background-color: #fff;
   }
 }
 button:focus,

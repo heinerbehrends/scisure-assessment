@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import { useQuery } from "@vue/apollo-composable";
 import { type UsersResponse, GET_USERS } from "./create-types-queries";
 import { useCreatePost } from "./useCreatePost";
-import InlineNotification from "./ErrorNotification.vue";
+import ErrorNotification from "./ErrorNotification.vue";
 
 const title = ref("");
 const body = ref("");
@@ -11,15 +11,13 @@ const username = ref("");
 
 const currentNotification = ref<{
   id: string;
-  type: string;
   title: string;
   message?: string;
 } | null>(null);
 
-function showNotification(type: string, title: string, message: string) {
+function showNotification(title: string, message: string) {
   currentNotification.value = {
     id: `notification-${Date.now()}`,
-    type,
     title,
     message,
   };
@@ -43,7 +41,6 @@ function createPost() {
     })
     .catch((error) => {
       showNotification(
-        "error",
         "Failed to Create Post",
         error.message || "An unexpected error occurred. Please try again."
       );
@@ -58,13 +55,14 @@ const userId = computed(
       ?.id
 );
 
-const { createPostMutation, createLoading, createError } = useCreatePost({
+const { createPostMutation, createLoading } = useCreatePost({
   title,
   body,
   username,
   userId,
 });
 </script>
+
 <template>
   <section class="create-post">
     <h2>Create Post</h2>
@@ -72,10 +70,17 @@ const { createPostMutation, createLoading, createError } = useCreatePost({
       <div class="create-post-container">
         <template v-if="result && result.users">
           <label for="username">Select User</label>
-          <div v-if="error" class="error-message">
+          <div
+            v-if="error"
+            class="error-message"
+            role="alert"
+            aria-live="assertive"
+          >
             Error loading users: {{ error.message }}
           </div>
-          <p class="user-input" v-if="loading">Loading...</p>
+          <p class="user-input" v-if="loading" role="alert" aria-live="polite">
+            Loading...
+          </p>
           <select
             id="username"
             v-model="username"
@@ -103,6 +108,7 @@ const { createPostMutation, createLoading, createError } = useCreatePost({
           placeholder="Title"
           :disabled="createLoading"
           required
+          aria-required="true"
           class="title-input"
         />
         <label for="body" class="body-label">Body</label>
@@ -113,16 +119,22 @@ const { createPostMutation, createLoading, createError } = useCreatePost({
           placeholder="Body"
           :disabled="createLoading"
           required
+          aria-required="true"
           class="body-input"
         />
-        <button type="submit" :disabled="createLoading" class="submit-button">
+        <button
+          type="submit"
+          :disabled="createLoading"
+          class="submit-button"
+          aria-live="polite"
+        >
           {{ createLoading ? "Creating..." : "Create Post" }}
         </button>
       </div>
     </form>
 
     <!-- Notification displayed underneath the create post button -->
-    <InlineNotification
+    <ErrorNotification
       :notification="currentNotification"
       @close="clearNotification"
     />

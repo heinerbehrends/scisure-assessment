@@ -59,8 +59,10 @@ const showCreatePost = ref(false);
         />
       </template>
       <!-- Post List -->
-      <ul ref="postListTop">
-        <p v-if="result.posts.data.length === 0">No posts found</p>
+      <ul ref="postListTop" aria-live="polite">
+        <li v-if="result.posts.data.length === 0" aria-live="polite">
+          No posts found
+        </li>
         <li v-for="post in result.posts.data" :key="post.id" class="post-item">
           <router-link
             :to="{

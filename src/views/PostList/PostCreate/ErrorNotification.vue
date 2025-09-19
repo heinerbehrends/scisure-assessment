@@ -4,7 +4,7 @@
       v-if="notification"
       class="error-notification"
       role="alert"
-      aria-live="polite"
+      aria-live="assertive"
       aria-labelledby="message"
     >
       <div class="content">
@@ -93,7 +93,6 @@ defineEmits<{
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Transition animations */
 .notification-enter-active,
 .notification-leave-active {
   transition: all 0.3s ease-in-out;
