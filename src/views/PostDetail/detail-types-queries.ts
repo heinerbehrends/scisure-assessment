@@ -1,6 +1,7 @@
 import gql from "graphql-tag";
 
 type Post = {
+  id: string;
   body: string;
   title: string;
   user: {
@@ -26,6 +27,7 @@ export type PostQueryArgs = {
 export const GET_POST = gql`
   query Post($postId: ID!) {
     post(id: $postId) {
+      id
       body
       comments {
         data {

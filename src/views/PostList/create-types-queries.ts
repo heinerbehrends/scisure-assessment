@@ -33,6 +33,11 @@ export type CreatePostResponse = {
     title: string;
     body: string;
     id: string;
+    user: {
+      __typename: "User";
+      id: string;
+      username: string;
+    };
   };
 };
 
@@ -45,7 +50,9 @@ export const CREATE_POST = gql`
       user {
         id
         username
+        __typename
       }
+      __typename
     }
   }
 `;

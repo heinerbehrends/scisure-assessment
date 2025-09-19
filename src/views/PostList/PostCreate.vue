@@ -35,10 +35,10 @@ const userId = computed(
 );
 
 const { createPostMutation, createLoading, createError } = useCreatePost({
-  title: title.value,
-  body: body.value,
-  username: username.value,
-  userId: userId.value as string,
+  title,
+  body,
+  username,
+  userId,
 });
 </script>
 <template>
@@ -125,6 +125,9 @@ const { createPostMutation, createLoading, createError } = useCreatePost({
 }
 .placeholder option {
   color: #fff;
+  @media (prefers-color-scheme: light) {
+    color: #000;
+  }
   padding: 0.75rem 1.5rem;
 }
 </style>

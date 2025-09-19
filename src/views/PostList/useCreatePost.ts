@@ -6,12 +6,13 @@ import {
   POSTS_VARIABLES,
   type PostListResponse,
 } from "./list-types-queries";
+import { type Ref } from "vue";
 
 type CreatePostArgs = {
-  title: string;
-  body: string;
-  username: string;
-  userId: string;
+  title: Ref<string>;
+  body: Ref<string>;
+  username: Ref<string>;
+  userId: Ref<string | undefined>;
 };
 
 export function useCreatePost({
@@ -27,20 +28,20 @@ export function useCreatePost({
   } = useMutation<CreatePostResponse>(CREATE_POST, () => ({
     variables: {
       input: {
-        title,
-        body,
+        title: title.value,
+        body: body.value,
       },
     },
     optimisticResponse: {
       createPost: {
         __typename: "Post",
-        title,
-        body,
+        title: title.value,
+        body: body.value,
         id: "101",
         user: {
           __typename: "User",
-          username,
-          id: userId,
+          username: username.value,
+          id: userId.value || "",
         },
       },
     },
@@ -60,8 +61,8 @@ export function useCreatePost({
               ...data?.createPost,
               user: {
                 __typename: "User",
-                username,
-                id: userId,
+                username: username.value,
+                id: userId.value || "",
               },
             },
             ...existingPosts.posts.data,
